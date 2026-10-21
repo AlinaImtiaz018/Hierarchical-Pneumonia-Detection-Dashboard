@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+title: Hierarchical Pneumonia Detection using Chest X-Rays
+message: 'If you use this software, please cite it as below.'
+type: software
+authors:
+  - given-names: Alina
+    family-names: Imtiaz
+    email: alinaimtiaz097@gmail.com
+repository-code: >-
+  https://github.com/AlinaImtiaz018/Hierarchical-Pneumonia-Detection-using-Chest-X-Rays/tree/main
+url: >-
+  https://github.com/AlinaImtiaz018/Hierarchical-Pneumonia-Detection-using-Chest-X-Rays.git
+abstract: >-
+  Built deep learning models for medical image classification 
+(Normal vs Pneumonia; Bacterial vs Viral). Focused on improving 
+diagnostic support using computer vision techniques. 
+keywords:
+  - deep neural networks
+  - gradcam
+  - CXR images
+  - computer vision
+  - diagnostic support
+  - image classification
+license: MIT
+version: v1.0
+date-released: '2026-05-17'
