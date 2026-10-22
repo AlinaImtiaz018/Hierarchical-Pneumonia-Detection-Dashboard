@@ -1,541 +1,148 @@
-# Hierarchical Pneumonia Detection using Chest X-Rays
+# Chest X-Ray AI — Hierarchical Pneumonia Detection Dashboard
 
-This project implements a **Hierarchical Deep Learning Pipeline** for detecting pneumonia from chest X-ray images using **DenseNet121**.
+This repository contains an interactive **Streamlit application** that demonstrates a two-stage DenseNet121 pipeline for chest X-ray analysis. The app provides a user-friendly interface for exploring the dataset, reviewing training and evaluation results, and running live hierarchical predictions (normal vs pneumonia, then viral vs bacterial).
 
-The system performs classification in two stages:
-
-<img width="1396" height="778" align="center" alt="classification" src="https://github.com/user-attachments/assets/f892d486-8a1a-4dbe-bc75-a11a1c584c7c" />
-
-Instead of directly predicting 3 classes simultaneously, the model first determines:
-
-<table align="center" border="0">
-  <tr>
-    <td align="center">
-      <img width="200" height="200" src="https://github.com/user-attachments/assets/ebc5830d-34ff-45dc-8f15-95a13d5c484c"/><br/>
-      <sub>Normal</sub>
-    </td>
-    <td align="center">
-      <img width="200" height="200" src="https://github.com/user-attachments/assets/cd073fbb-e1f1-4690-be18-b8be79962b0d"/><br/>
-      <sub>Bacterial</sub>
-    </td>
-    <td align="center">
-      <img width="200" height="200" src="https://github.com/user-attachments/assets/eff082ea-62cb-4398-bbf3-da30acd09325"/><br/>
-      <sub>Viral</sub>
-    </td>
-  </tr>
-</table>
-
-<p align="center">
-  <b>Figure 1: Chest X-ray classification examples</b>
-</p>
-
-1. NORMAL vs PNEUMONIA
-2. If pneumonia is detected, a second model classifies:
-
-   * VIRAL pneumonia
-   * BACTERIAL pneumonia
-
-This hierarchical approach is more clinically meaningful and improves interpretability.
+The purpose of this repository is to make the project accessible through an interactive web application without requiring users to execute notebooks or write code.
 
 ---
 
-# Dataset Structure
+## Features
 
-Place all chest X-ray images inside:
-
-```text
-chest_xray_dataset/
-```
-
-with the following structure:
-
-```text
-chest_xray_dataset/
-├── NORMAL/
-├── VIRUS/
-└── BACTERIA/
-```
-
-Example:
-
-```text
-NORMAL/
-    normal_1.jpg
-    normal_2.jpg
-
-VIRUS/
-    virus_1.jpg
-    virus_2.jpg
-
-BACTERIA/
-    bacteria_1.jpg
-    bacteria_2.jpg
-```
+* Interactive hierarchical pneumonia detection demonstrator
+* Dataset exploration with class balance and sample radiographs
+* Methodology overview (architecture, preprocessing, training setup)
+* Training curves and recorded experiment history
+* Evaluation dashboard (metrics, classification reports, confusion matrices, ROC curves)
+* Live inference with stage-wise probability breakdown
+* Optional Grad-CAM visualization (when `grad-cam` is installed)
+* Dark-themed, responsive Streamlit user interface
 
 ---
 
-# Dataset Statistics
-
-| Class    | Images |
-| -------- | -----: |
-| NORMAL   |   1583 |
-| VIRUS    |   1493 |
-| BACTERIA |   2780 |
-
-The dataset imbalance is handled using:
-
-* WeightedRandomSampler
-* Weighted CrossEntropyLoss
-* Data augmentation
-
----
-
-# Project Structure
+## Project Structure
 
 ```text
-Pneumonia_Project/
-│
-├── chest_xray_dataset/
-│   ├── NORMAL/
-│   ├── VIRUS/
-│   └── BACTERIA/
-│
-├── data_stage1/
-│   ├── train/
-│   ├── val/
-│   └── test/
-│
-├── data_stage2/
-│   ├── train/
-│   ├── val/
-│   └── test/
-│
+Chest-XRay-AI/
+|
+├── data/
+|   ├── data_stage1/          # Stage 1 splits (NORMAL / PNEUMONIA)
+|   └── data_stage2/          # Stage 2 splits (VIRUS / BACTERIA)
 ├── models/
-│   ├── stage1.pth
-│   └── stage2.pth
-│
+|   ├── stage1.pth            # DenseNet121 screening checkpoint
+|   └── stage2.pth            # DenseNet121 subtype checkpoint
 ├── results/
-│   ├── stage1/
-│   └── stage2/
-│
-├── test_images/
-│
-├── split_dataset.py
-├── utils.py
-├── train_stage1.py
-├── train_stage2.py
-├── inference.py
-├── evaluate.py
-├── visualize_results.py
-├── visualization.py
-├── gradcam.py
-│
-├── requirements.txt
-├── .gitignore
-└── README.md
+|   ├── stage1/               # history.json, metrics, reports, summary
+|   └── stage2/
+├── chest_xray_dataset/       # Source labels: NORMAL, VIRUS, BACTERIA
+├── test_images/              # Bundled sample radiographs for the demo
+├── app.py
+├── CITATION.cff
+├── CONDUCT.md
+├── LICENSE                    # Main Streamlit dashboard (or equivalent entrypoint)
+├── README.md
+└── requirements.txt
 ```
 
----
-
-# Hierarchical Classification Pipeline
-
-## Stage 1 — Binary Classification
-
-DenseNet121 model:
-
-```text
-NORMAL vs PNEUMONIA
-```
-
-Where:
-
-```text
-PNEUMONIA = VIRUS + BACTERIA
-```
-
-Output:
-
-| Label | Meaning   |
-| ----- | --------- |
-| 0     | NORMAL    |
-| 1     | PNEUMONIA |
+Paths can be adjusted in the app; defaults point at the folders above relative to the project root.
 
 ---
 
-## Stage 2 — Pneumonia Subtype Classification
+## Installation
 
-Executed only if Stage 1 predicts pneumonia.
-
-DenseNet121 model:
-
-```text
-VIRUS vs BACTERIA
-```
-
-Output:
-
-| Label | Meaning   |
-| ----- | --------- |
-| 0     | VIRAL     |
-| 1     | BACTERIAL |
-
----
-
-# Why DenseNet121?
-
-DenseNet121 is widely used in medical imaging because it provides:
-
-* Strong feature reuse
-* Efficient gradient flow
-* Better performance on small medical datasets
-* Strong chest X-ray performance
-* Better Grad-CAM visualizations
-
-Inspired by:
-
-* CheXNet
-* Medical imaging literature
-
----
-
-# Features
-
-Implemented features include:
-
-* Hierarchical classification pipeline
-* DenseNet121 pretrained backbone
-* WeightedRandomSampler
-* Weighted CrossEntropyLoss
-* Data augmentation
-* Early stopping
-* Model checkpoint saving
-* Evaluation metrics
-* Confusion matrix generation
-* ROC curve generation
-* Grad-CAM explainability
-* GPU support
-* Training history visualization
-
----
-
-# Data Augmentation
-
-The following augmentations are applied during training:
-
-* Random horizontal flip
-* Small rotation
-* Small affine translation
-* Brightness/contrast jitter
-
-Medical precautions:
-
-* No vertical flips
-* No aggressive cropping
-* No extreme rotations
-
----
-
-# Installation
-
-## 1. Clone Repository
+Clone the repository:
 
 ```bash
-git clone <repository-url>
-cd Hierarchical-Pneumonia-Detection-using-Chest-X-Rays
+git clone <your-repo-url>
+cd Chest-XRay-AI
 ```
 
----
-
-## 2. Create Virtual Environment
-
-Windows:
+Create a virtual environment (recommended):
 
 ```bash
-python -m venv pneumonia-env
+python -m venv .venv
 ```
 
----
+Activate the environment:
 
-## 3. Activate Environment
-
-Windows:
+**Windows**
 
 ```bash
-pneumonia-env\Scripts\activate
+.venv\Scripts\activate
 ```
 
-If successful:
+**Linux / macOS**
 
-```text
-(pneumonia-env)
+```bash
+source .venv/bin/activate
 ```
 
-appears in the terminal.
-
----
-
-## 4. Install Requirements
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-or manually:
+Optional (for Grad-CAM heatmaps in the demo):
 
 ```bash
-pip install torch torchvision scikit-learn matplotlib pillow tqdm grad-cam
+pip install grad-cam
 ```
 
----
-
-# Running the Project
+Ensure the model checkpoints (`models/stage1.pth`, `models/stage2.pth`) and result artifacts under `results/` are present if you want training and evaluation pages fully populated.
 
 ---
 
-## Step 1 — Split Dataset
+## Running the Application
 
-Run:
+Launch Streamlit (replace `app.py` with your actual entrypoint filename if different):
 
 ```bash
-python split_dataset.py
+streamlit run app.py
 ```
 
-This creates:
-
-```text
-data_stage1/
-data_stage2/
-```
-
-with train/validation/test splits.
+The application will open in your default browser; if it does not, copy the local URL shown in the terminal after launch.
 
 ---
 
-## Step 2 — Train Stage 1 Model
+## Application Pages
 
-Binary classifier:
-
-```text
-NORMAL vs PNEUMONIA
-```
-
-Run:
-
-```bash
-python train_stage1.py
-```
-
-Saved model:
-
-```text
-models/stage1.pth
-```
+| Page | Description |
+|------|-------------|
+| **Overview** | Project summary, dataset counts, model performance snapshot, decision pipeline |
+| **Dataset explorer** | Class distribution charts, split tables, representative training images |
+| **Methodology** | Stage 1 / Stage 2 architecture, loss, sampling, preprocessing and augmentation |
+| **Training results** | Loss and accuracy curves from saved experiment histories |
+| **Evaluation** | Test metrics, classification reports, confusion matrices, ROC curves |
+| **Interactive demo** | Upload or select a chest X-ray and run the full hierarchical prediction |
 
 ---
 
-## Step 3 — Train Stage 2 Model
+## Technologies Used
 
-Pneumonia subtype classifier:
-
-```text
-VIRUS vs BACTERIA
-```
-
-Run:
-
-```bash
-python train_stage2.py
-```
-
-Saved model:
-
-```text
-models/stage2.pth
-```
+* Python
+* Streamlit
+* PyTorch / torchvision
+* DenseNet121
+* Pandas
+* NumPy
+* Plotly
+* Pillow (PIL)
+* pytorch-grad-cam (optional)
 
 ---
 
-## Step 4 — Evaluate Models
+## Purpose
 
-Run:
-
-```bash
-python evaluate.py
-```
-
-Generated outputs:
-
-* Accuracy
-* Precision
-* Recall
-* F1-score
-* Classification report
-* Confusion matrix
-* ROC curve
-
-Saved inside:
-
-```text
-results/
-```
+This repository serves as a portfolio demonstration of a hierarchical chest X-ray classifier. It makes it easy to explore the dataset, training behavior, evaluation evidence, and live model predictions through a single web interface—intended for educational and research use only, not clinical diagnosis.
 
 ---
 
-## Step 5 — Visualize Training Curves
+## Citation
 
-Run:
-
-```bash
-python visualize_results.py
-```
-
-Outputs:
-
-* Loss curves
-* Accuracy curves
+If you use this repository in your work or research, please cite it using the provided **CITATION.cff** file (if present) or reference this repository appropriately.
 
 ---
 
-## Step 6 — Run Hierarchical Inference
+## License
 
-Place a test image inside:
-
-```text
-test_images/
-```
-
-Run:
-
-```bash
-python inference.py
-```
-
-Example output:
-
-```text
-Prediction: BACTERIAL
-```
-
-or:
-
-```text
-Prediction: NORMAL
-```
-
----
-
-# Grad-CAM Explainability
-
-Grad-CAM visualizes which lung regions influenced the prediction.
-
-Run:
-
-```bash
-python gradcam.py
-```
-
-Expected behavior:
-
-## Viral Pneumonia
-<img width="758" height="202" align="center" alt="viral" src="https://github.com/user-attachments/assets/cc7cda7d-ac30-40f7-889f-b2fa85acf85f" />
-
-* Diffuse bilateral opacities
-* Widespread interstitial patterns
-
-## Bacterial Pneumonia
-<img width="762" height="201" align="center" alt="bacterial" src="https://github.com/user-attachments/assets/65d2dcad-b738-492f-ab8c-98a6e66e530c" />
-
-* Localized lobar consolidation
-* Focal opacity regions
-
----
-
-# Evaluation Metrics
-
-The following metrics are used:
-
-* Accuracy
-* Precision
-* Recall
-* F1-score
-* Confusion Matrix
-* ROC Curve
-* AUC Score
-
-Medical AI systems should not rely on accuracy alone.
-
----
-
-# GPU Support
-
-CUDA is automatically detected:
-
-```python
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-```
-
-Verify GPU:
-
-```python
-import torch
-
-print(torch.cuda.is_available())
-print(torch.cuda.get_device_name(0))
-```
-
----
-
-# Important Medical AI Notes
-
-Always inspect Grad-CAM outputs.
-
-Deep learning models may incorrectly learn shortcuts such as:
-
-* Image borders
-* Embedded text
-* Scanner artifacts
-* Hospital markers
-
-instead of actual pathology.
-
----
-
-# Future Improvements
-
-Potential future extensions:
-
-* Vision Transformers (ViT)
-* Swin Transformers
-* Ensemble learning
-* Multi-label disease detection
-* Lung segmentation
-* Attention mechanisms
-* Clinical report generation
-* FastAPI deployment
-* Docker deployment
-* SHAP explainability
-* Monte-Carlo Dropout uncertainty estimation
-
----
-
-# References
-
-DenseNet:
-
-```text
-Huang et al. — Densely Connected Convolutional Networks
-```
-
-CheXNet:
-
-```text
-Rajpurkar et al. — CheXNet: Radiologist-Level Pneumonia Detection
-```
-
----
-
-# License
-
-This project is licensed under [LICENSE](LICENSE), intended for educational and research purposes only.
-
-It is NOT approved for clinical diagnosis.
+This project is licensed under the MIT License. See the **LICENSE** file for details.
