@@ -22,19 +22,6 @@ pneumonia-env/
 *.pth
 *.pt
 
-# DATASETS
-data/
-data_stage1/
-data_stage2/
-chest_xray_dataset/
-
-# RESULTS
-results/
-
-# GENERATED IMAGES
-*.png
-*.jpg
-*.jpeg
 
 # LOG FILES
 *.log
