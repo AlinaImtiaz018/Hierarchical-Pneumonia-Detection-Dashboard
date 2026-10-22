@@ -19,7 +19,6 @@ pneumonia-env/
 .vscode/
 
 # PYTORCH MODELS
-*.pth
 *.pt
 
 
